@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
-import { DailyGoal, Priority, StudySession } from '../types';
-import { EXAM_SCHEDULE } from '../constants';
+import { DailyGoal, Priority, StudySession } from '../types.ts';
+import { EXAM_SCHEDULE } from '../constants.ts';
 import { CheckCircle, Circle, TrendingUp, Calendar as CalIcon, Clock, History, Hourglass } from 'lucide-react';
 import SessionTracker from './SessionTracker';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';

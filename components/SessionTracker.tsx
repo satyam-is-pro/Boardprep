@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Subject, DailyGoal } from '../types';
+import { Subject, DailyGoal } from '../types.ts';
 import { api } from '../services/api';
 import { Play, Square, Save, Clock, Target } from 'lucide-react';
 
@@ -12,17 +12,17 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
   const [activeTab, setActiveTab] = useState<'timer' | 'manual'>('timer');
   const [isRunning, setIsRunning] = useState(false);
   const [seconds, setSeconds] = useState(0);
-  
+
   // Selection State
   const [selectedGoalId, setSelectedGoalId] = useState<string>('');
-  
+
   // Derived state from selected goal
   const [subject, setSubject] = useState<Subject | ''>('');
   const [topic, setTopic] = useState('');
-  
+
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [feedback, setFeedback] = useState<string>('');
-  
+
   // Timer Ref
   const timerRef = useRef<number | null>(null);
   const startTimeRef = useRef<Date | null>(null);
@@ -38,23 +38,23 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
   // Clear feedback after 3 seconds
   useEffect(() => {
     if (feedback) {
-        const t = setTimeout(() => setFeedback(''), 3000);
-        return () => clearTimeout(t);
+      const t = setTimeout(() => setFeedback(''), 3000);
+      return () => clearTimeout(t);
     }
   }, [feedback]);
 
   const handleGoalSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const gId = e.target.value;
-      setSelectedGoalId(gId);
-      
-      const goal = activeGoals.find(g => g.id === gId);
-      if (goal) {
-          setSubject(goal.subject);
-          setTopic(goal.title);
-      } else {
-          setSubject('');
-          setTopic('');
-      }
+    const gId = e.target.value;
+    setSelectedGoalId(gId);
+
+    const goal = activeGoals.find(g => g.id === gId);
+    if (goal) {
+      setSubject(goal.subject);
+      setTopic(goal.title);
+    } else {
+      setSubject('');
+      setTopic('');
+    }
   };
 
   const formatTime = (totalSeconds: number) => {
@@ -71,7 +71,7 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
     }
     setIsRunning(true);
     startTimeRef.current = new Date();
-    
+
     // Update UI using timestamp difference for accuracy (avoids interval drift)
     timerRef.current = window.setInterval(() => {
       if (startTimeRef.current) {
@@ -84,14 +84,14 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
 
   const stopTimer = async () => {
     if (!currentUser || !startTimeRef.current) return;
-    
+
     clearInterval(timerRef.current!);
     setIsRunning(false);
-    
+
     const endTime = new Date();
     // Calculate precise duration in seconds based on timestamps
     const elapsedSeconds = (endTime.getTime() - startTimeRef.current.getTime()) / 1000;
-    
+
     // Save if > 5 seconds to catch short tests and "automatic" feel
     if (elapsedSeconds >= 5) {
       // Calculate minutes as float for better accuracy on short sessions
@@ -99,7 +99,7 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
       await saveSession(startTimeRef.current, endTime, duration);
       setFeedback('Session Logged! ✅');
     } else {
-        setFeedback('Too short (< 5s) ❌');
+      setFeedback('Too short (< 5s) ❌');
     }
 
     setSeconds(0);
@@ -109,7 +109,7 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
 
   const saveSession = async (start: Date, end: Date, duration: number) => {
     try {
-      if(!currentUser) return;
+      if (!currentUser) return;
       const today = new Date().toISOString().split('T')[0];
       await api.addSession(currentUser.uid, {
         userId: currentUser.uid,
@@ -130,18 +130,18 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
     e.preventDefault();
     if (!currentUser) return;
     if (!selectedGoalId) {
-        alert("Select a goal first.");
-        return;
+      alert("Select a goal first.");
+      return;
     }
 
     const form = e.target as HTMLFormElement;
     const durationInput = parseFloat(form.duration.value);
-    
+
     if (isNaN(durationInput) || durationInput <= 0) {
       alert("Please enter a valid duration.");
       return;
     }
-    
+
     // Create approximate start/end times based on now
     const end = new Date();
     const start = new Date(end.getTime() - durationInput * 60000);
@@ -160,13 +160,13 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
 
       {/* Tabs */}
       <div className="flex gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
-        <button 
+        <button
           onClick={() => setActiveTab('timer')}
           className={`pb-2 text-sm font-medium ${activeTab === 'timer' ? 'text-brand-600 border-b-2 border-brand-600' : 'text-gray-500'}`}
         >
           Stopwatch
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('manual')}
           className={`pb-2 text-sm font-medium ${activeTab === 'manual' ? 'text-brand-600 border-b-2 border-brand-600' : 'text-gray-500'}`}
         >
@@ -179,7 +179,7 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
           <label className="block text-xs font-bold text-brand-800 dark:text-brand-300 uppercase mb-2 flex items-center gap-1">
             <Target className="w-3 h-3" /> Select Target Goal
           </label>
-          <select 
+          <select
             value={selectedGoalId}
             onChange={handleGoalSelect}
             disabled={isRunning}
@@ -187,16 +187,16 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
           >
             <option value="">-- Choose a Goal --</option>
             {activeGoals.filter(g => !g.completed).map(g => (
-                <option key={g.id} value={g.id}>
-                    [{g.subject}] {g.title}
-                </option>
+              <option key={g.id} value={g.id}>
+                [{g.subject}] {g.title}
+              </option>
             ))}
             {activeGoals.length === 0 && <option disabled>No pending goals. Add one in Planner!</option>}
           </select>
           {selectedGoalId && (
-              <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                  Current Target: <span className="font-semibold text-gray-800 dark:text-gray-200">{topic}</span>
-              </div>
+            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              Current Target: <span className="font-semibold text-gray-800 dark:text-gray-200">{topic}</span>
+            </div>
           )}
         </div>
 
@@ -205,15 +205,15 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
             <div className={`text-5xl font-mono font-bold mb-6 ${isRunning ? 'text-brand-600' : 'text-gray-400'}`}>
               {formatTime(seconds)}
             </div>
-            
+
             {feedback && (
-                <div className="mb-4 text-sm font-semibold text-green-600 dark:text-green-400 animate-bounce">
-                    {feedback}
-                </div>
+              <div className="mb-4 text-sm font-semibold text-green-600 dark:text-green-400 animate-bounce">
+                {feedback}
+              </div>
             )}
-            
+
             {!isRunning ? (
-              <button 
+              <button
                 onClick={startTimer}
                 disabled={!selectedGoalId}
                 className={`w-full py-3 text-white rounded-lg flex items-center justify-center gap-2 font-semibold transition-colors ${!selectedGoalId ? 'bg-gray-300 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-700'}`}
@@ -221,7 +221,7 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
                 <Play className="w-5 h-5" /> Start Focus
               </button>
             ) : (
-              <button 
+              <button
                 onClick={stopTimer}
                 className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center justify-center gap-2 font-semibold transition-colors"
               >
@@ -233,9 +233,9 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
         ) : (
           <form onSubmit={handleManualSubmit} className="mt-4">
             <div className="mb-4">
-               <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Duration (Minutes)</label>
-               <input 
-                type="number" 
+              <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Duration (Minutes)</label>
+              <input
+                type="number"
                 name="duration"
                 min="0.1"
                 step="0.1"
@@ -244,11 +244,11 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
               />
             </div>
             {feedback && (
-                <div className="mb-4 text-sm font-semibold text-green-600 dark:text-green-400">
-                    {feedback}
-                </div>
+              <div className="mb-4 text-sm font-semibold text-green-600 dark:text-green-400">
+                {feedback}
+              </div>
             )}
-            <button 
+            <button
               type="submit"
               disabled={!selectedGoalId}
               className={`w-full py-3 text-white rounded-lg flex items-center justify-center gap-2 font-semibold ${!selectedGoalId ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-800 dark:bg-gray-600 hover:bg-gray-900'}`}

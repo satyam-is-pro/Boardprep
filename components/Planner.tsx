@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { EXAM_SCHEDULE, SUBJECTS_LIST } from '../constants';
-import { Subject, Priority, DailyGoal } from '../types';
+import { EXAM_SCHEDULE, SUBJECTS_LIST } from '../constants.ts';
+import { Subject, Priority, DailyGoal } from '../types.ts';
 import { api } from '../services/api';
 import { Plus, Calendar, AlertTriangle, Trash2, Edit2, X, Check } from 'lucide-react';
 

@@ -1,11 +1,11 @@
 import { db, auth } from '../firebase';
-import { 
-  collection, addDoc, getDocs, query, where, updateDoc, doc, Timestamp, orderBy, limit, setDoc, getDoc, deleteDoc 
+import {
+  collection, addDoc, getDocs, query, where, updateDoc, doc, Timestamp, orderBy, limit, setDoc, getDoc, deleteDoc
 } from 'firebase/firestore';
-import { 
-  signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, User 
+import {
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, User
 } from 'firebase/auth';
-import { DailyGoal, StudySession, Subject, Priority } from '../types';
+import { DailyGoal, StudySession, Subject, Priority } from '../types.ts';
 
 // Check if Firebase is configured with real keys
 const isFirebaseConfigured = auth && auth.app.options.apiKey !== "YOUR_API_KEY_HERE";
@@ -30,26 +30,26 @@ const seedMockData = (uid: string) => {
 
   const initialGoals: DailyGoal[] = [
     {
-      id: 'g1', userId: uid, date: today, title: 'Science - Electricity Numericals', 
+      id: 'g1', userId: uid, date: today, title: 'Science - Electricity Numericals',
       subject: Subject.Science, targetHours: 2, completed: false, priority: Priority.High, createdAt: Date.now()
     },
     {
-      id: 'g2', userId: uid, date: today, title: 'Maths - Quadratic Equations', 
+      id: 'g2', userId: uid, date: today, title: 'Maths - Quadratic Equations',
       subject: Subject.Maths, targetHours: 1.5, completed: true, priority: Priority.Medium, createdAt: Date.now()
     },
     {
-      id: 'g3', userId: uid, date: yesterday, title: 'SST - Nationalism in Europe', 
+      id: 'g3', userId: uid, date: yesterday, title: 'SST - Nationalism in Europe',
       subject: Subject.SST, targetHours: 1, completed: false, priority: Priority.High, createdAt: Date.now()
     }
   ];
 
   const initialSessions: StudySession[] = [
     {
-      id: 's1', userId: uid, date: today, subject: Subject.Maths, topic: 'Quadratic Eq Ex 4.1', 
+      id: 's1', userId: uid, date: today, subject: Subject.Maths, topic: 'Quadratic Eq Ex 4.1',
       startTime: Date.now() - 3600000, endTime: Date.now(), durationMinutes: 60
     },
     {
-      id: 's2', userId: uid, date: yesterday, subject: Subject.Science, topic: 'Ohm Law', 
+      id: 's2', userId: uid, date: yesterday, subject: Subject.Science, topic: 'Ohm Law',
       startTime: Date.now() - 90000000, endTime: Date.now() - 86400000, durationMinutes: 120
     }
   ];
@@ -69,7 +69,7 @@ export const api = {
     } else {
       callback(currentMockUser);
       // Return dummy unsubscribe
-      return () => {};
+      return () => { };
     }
   },
 
@@ -119,20 +119,20 @@ export const api = {
   getGoals: async (userId: string, date: string): Promise<DailyGoal[]> => {
     // Logic: Get goals for TODAY OR (Goals from PAST that are NOT COMPLETED) OR (Goals from PAST that were COMPLETED TODAY)
     const shouldIncludeGoal = (g: DailyGoal) => {
-        const isToday = g.date === date;
-        // Incomplete goals from the past stay visible (rollover)
-        const isPastIncomplete = g.date < date && !g.completed;
-        // Completed goals from the past stay visible ONLY if they were completed today
-        const isPastCompletedToday = g.date < date && g.completed && g.completedAt === date;
-        
-        return isToday || isPastIncomplete || isPastCompletedToday;
+      const isToday = g.date === date;
+      // Incomplete goals from the past stay visible (rollover)
+      const isPastIncomplete = g.date < date && !g.completed;
+      // Completed goals from the past stay visible ONLY if they were completed today
+      const isPastCompletedToday = g.date < date && g.completed && g.completedAt === date;
+
+      return isToday || isPastIncomplete || isPastCompletedToday;
     };
 
     if (isFirebaseConfigured) {
-      const q = query(collection(db, `users/${userId}/dailyGoals`)); 
+      const q = query(collection(db, `users/${userId}/dailyGoals`));
       const snap = await getDocs(q);
-      const all = snap.docs.map(d => ({ id: d.id, ...d.data() } as DailyGoal));
-      
+      const all = snap.docs.map(d => ({ id: d.id, ...d.data() as any } as DailyGoal));
+
       return all.filter(shouldIncludeGoal);
     } else {
       await new Promise(r => setTimeout(r, MOCK_DELAY));
@@ -166,7 +166,7 @@ export const api = {
   },
 
   deleteGoal: async (userId: string, goalId: string) => {
-     if (isFirebaseConfigured) {
+    if (isFirebaseConfigured) {
       await deleteDoc(doc(db, `users/${userId}/dailyGoals`, goalId));
     } else {
       const all = JSON.parse(localStorage.getItem(`goals_${userId}`) || '[]');
@@ -178,9 +178,9 @@ export const api = {
   toggleGoal: async (userId: string, goalId: string, currentStatus: boolean) => {
     const newStatus = !currentStatus;
     const today = new Date().toISOString().split('T')[0];
-    const updates = { 
-        completed: newStatus,
-        completedAt: newStatus ? today : null
+    const updates = {
+      completed: newStatus,
+      completedAt: newStatus ? today : null
     };
 
     if (isFirebaseConfigured) {
@@ -205,7 +205,7 @@ export const api = {
         q = query(collection(db, `users/${userId}/studySessions`), orderBy("endTime", "desc"), limit(200));
       }
       const snap = await getDocs(q);
-      return snap.docs.map(d => ({ id: d.id, ...d.data() } as StudySession));
+      return snap.docs.map(d => ({ id: d.id, ...d.data() as any } as StudySession));
     } else {
       await new Promise(r => setTimeout(r, MOCK_DELAY));
       const all = JSON.parse(localStorage.getItem(`sessions_${userId}`) || '[]');

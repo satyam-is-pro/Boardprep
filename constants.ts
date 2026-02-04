@@ -1,4 +1,4 @@
-import { Subject, ExamDate } from './types';
+import { Subject, ExamDate } from './types.ts';
 
 export const MOTIVATIONAL_QUOTES = [
   "Success is the sum of small efforts, repeated day in and day out.",
