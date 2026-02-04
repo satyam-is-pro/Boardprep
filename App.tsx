@@ -139,7 +139,7 @@ const App: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
         <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full">
           <div className="text-center mb-8">
-            <img src="/logo.jpg" alt="PrepTracker Logo" className="w-24 h-24 mx-auto mb-4 rounded-full object-cover shadow-md" />
+            <img src="/logo.jpg" alt="PrepTracker Logo" className="w-24 h-24 mx-auto mb-6 rounded-full object-cover shadow-lg border-4 border-white dark:border-gray-800" />
             <h1 className="text-2xl font-bold text-gray-900">Class 10 Prep Tracker</h1>
             <p className="text-gray-500">Focus. Discipline. Results.</p>
           </div>
@@ -211,9 +211,11 @@ const App: React.FC = () => {
       {/* Sidebar */}
       {/* Mobile Menu Button - Visible ONLY on Mobile */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2 font-bold text-lg text-brand-600 dark:text-brand-400">
-          <img src="/logo.jpg" alt="Logo" className="w-8 h-8 rounded-full object-cover" />
-          <span>PrepTracker</span>
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 bg-gradient-to-br from-brand-500 to-brand-700 rounded-lg shadow-sm">
+            <BookOpen className="w-5 h-5 text-white" />
+          </div>
+          <span className="font-bold text-lg text-gray-900 dark:text-white tracking-tight">PrepTracker</span>
         </div>
         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 text-gray-600 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
           {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -227,12 +229,16 @@ const App: React.FC = () => {
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           md:top-0
       `}>
-        <div className="p-6 hidden md:flex items-center justify-between">
-          <div className="flex items-center gap-2 font-bold text-xl text-brand-600 dark:text-brand-400">
-            <img src="/logo.jpg" alt="Logo" className="w-10 h-10 rounded-full object-cover" />
-            <span>PrepTracker</span>
+        <div className="p-6 pb-0 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl shadow-lg">
+              <BookOpen className="w-6 h-6 text-white" />
+            </div>
+            <span className="font-bold text-xl text-gray-900 dark:text-white tracking-tight">PrepTracker</span>
           </div>
         </div>
+
+        <div className="mx-6 mt-6 mb-2 border-b border-gray-200 dark:border-gray-700/50"></div>
 
         <nav className="flex flex-col gap-1 p-4 md:p-6 h-full md:h-auto overflow-y-auto pt-20 md:pt-6">
           <button
