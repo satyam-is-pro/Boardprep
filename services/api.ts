@@ -229,6 +229,36 @@ export const api = {
     }
   },
 
+  deleteSession: async (userId: string, sessionId: string) => {
+    if (isFirebaseConfigured) {
+      await deleteDoc(doc(db, `users/${userId}/studySessions`, sessionId));
+    } else {
+      const all = JSON.parse(localStorage.getItem(`sessions_${userId}`) || '[]');
+      const filtered = all.filter((s: StudySession) => s.id !== sessionId);
+      localStorage.setItem(`sessions_${userId}`, JSON.stringify(filtered));
+    }
+  },
+
+  updateSession: async (userId: string, sessionId: string, updates: Partial<StudySession>) => {
+    if (isFirebaseConfigured) {
+      const updateData: any = { ...updates };
+      if (updates.startTime) {
+        updateData.startTime = Timestamp.fromDate(new Date(updates.startTime));
+      }
+      if (updates.endTime) {
+        updateData.endTime = Timestamp.fromDate(new Date(updates.endTime));
+      }
+      await updateDoc(doc(db, `users/${userId}/studySessions`, sessionId), updateData);
+    } else {
+      const all = JSON.parse(localStorage.getItem(`sessions_${userId}`) || '[]');
+      const idx = all.findIndex((s: StudySession) => s.id === sessionId);
+      if (idx !== -1) {
+        all[idx] = { ...all[idx], ...updates };
+        localStorage.setItem(`sessions_${userId}`, JSON.stringify(all));
+      }
+    }
+  },
+
   // SETTINGS
   getNote: async (userId: string) => {
     if (isFirebaseConfigured) {

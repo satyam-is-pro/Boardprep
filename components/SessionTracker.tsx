@@ -216,7 +216,18 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
               <button
                 onClick={startTimer}
                 disabled={!selectedGoalId}
-                className={`w-full py-3 text-white rounded-lg flex items-center justify-center gap-2 font-semibold transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${!selectedGoalId ? 'bg-gray-300 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-500 hover:via-pink-500 hover:to-red-500 shadow-purple-500/50'}`}
+                className={`w-full py-3 text-white rounded-lg flex items-center justify-center gap-2 font-semibold transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${!selectedGoalId ? 'opacity-70 cursor-not-allowed' : ''}`}
+                style={{
+                  background: 'linear-gradient(to right, #9333ea, #ec4899, #dc2626)',
+                  boxShadow: '0 10px 15px -3px rgba(147, 51, 234, 0.3)'
+                }}
+                onMouseEnter={(e) => {
+                  if (!selectedGoalId) return;
+                  e.currentTarget.style.background = 'linear-gradient(to right, #a855f7, #f472b6, #ef4444)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'linear-gradient(to right, #9333ea, #ec4899, #dc2626)';
+                }}
               >
                 <Play className="w-5 h-5 fill-current" /> START FOCUS SESSION
               </button>
