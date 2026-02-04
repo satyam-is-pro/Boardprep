@@ -375,7 +375,7 @@ const Dashboard: React.FC<Props> = ({ onGoalsChange }) => {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <div className="text-sm font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30 px-2 py-1 rounded">
-                                                {session.durationMinutes} min
+                                                {formatDurationHelper(session.durationMinutes / 60)}
                                             </div>
                                             <button
                                                 onClick={() => handleEditSession(session)}
