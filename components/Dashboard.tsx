@@ -25,6 +25,11 @@ const Dashboard: React.FC<Props> = ({ onGoalsChange }) => {
     const [motivationalNote, setMotivationalNote] = useState("");
     const [isEditingNote, setIsEditingNote] = useState(false);
     const [currentUser, setCurrentUser] = useState<any>(null);
+    const [confidence, setConfidence] = useState<number | null>(null);
+    const [avgConfidence, setAvgConfidence] = useState<number | null>(null);
+    const [confidenceInput, setConfidenceInput] = useState(80); // Default for slider
+    const [confidenceHistory, setConfidenceHistory] = useState<{ date: string, score: number }[]>([]);
+    const [isEditingConfidence, setIsEditingConfidence] = useState(false);
 
     useEffect(() => {
         const unsub = api.onAuthStateChanged((u) => {
@@ -132,6 +137,19 @@ const Dashboard: React.FC<Props> = ({ onGoalsChange }) => {
 
         if (upcoming.length > 0) setNextExam({ ...upcoming[0], days: upcoming[0].days });
 
+        // Fetch Confidence
+        const conf = await api.getConfidence(uid, today);
+        setConfidence(conf);
+        if (conf) setConfidenceInput(conf); // Pre-fill slider with today's value
+
+        const allConf = await api.getConfidence(uid);
+        if (allConf.length > 0) {
+            const sum = allConf.reduce((a: number, b: number) => a + b, 0);
+            setAvgConfidence(Math.round(sum / allConf.length));
+        } else {
+            setAvgConfidence(null);
+        }
+
         setLoading(false);
     };
 
@@ -149,6 +167,15 @@ const Dashboard: React.FC<Props> = ({ onGoalsChange }) => {
         if (!currentUser) return;
         await api.saveNote(currentUser.uid, motivationalNote);
         setIsEditingNote(false);
+    };
+
+    const handleConfidenceLog = async (score: number) => {
+        if (!currentUser) return;
+        const today = new Date().toISOString().split('T')[0];
+        await api.logConfidence(currentUser.uid, today, score);
+        setConfidence(score);
+        setIsEditingConfidence(false);
+        fetchDashboardData(); // Refresh average
     };
 
     const formatTime = (timeValue: any) => {
@@ -363,6 +390,57 @@ const Dashboard: React.FC<Props> = ({ onGoalsChange }) => {
 
                 <SessionTracker onSessionComplete={fetchDashboardData} activeGoals={goals} />
 
+                {/* Daily Confidence Check - ONLY if tasks are almost done OR editing */}
+                {goals.length > 0 && goals.filter(g => !g.completed).length <= 1 && (!confidence || isEditingConfidence) && (
+                    <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-6 text-white shadow-lg animate-fade-in">
+                        <h4 className="font-bold mb-2">{confidence ? "Edit Today's Confidence" : "Daily Check-in"}</h4>
+                        <p className="text-indigo-100 text-sm mb-4">You're crushing it! How confident do you feel about your prep today? ({confidenceInput}%)</p>
+
+                        <div className="flex items-center gap-4">
+                            <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={confidenceInput}
+                                onChange={(e) => setConfidenceInput(Number(e.target.value))}
+                                className="w-full h-2 bg-indigo-400 rounded-lg appearance-none cursor-pointer accent-white"
+                            />
+                            <button
+                                onClick={() => handleConfidenceLog(confidenceInput)}
+                                className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-500 hover:via-pink-500 hover:to-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition shadow-md"
+                            >
+                                Save
+                            </button>
+                            {confidence && (
+                                <button
+                                    onClick={() => setIsEditingConfidence(false)}
+                                    className="bg-white/20 text-white px-4 py-2 rounded-lg font-bold hover:bg-white/30 transition"
+                                >
+                                    Cancel
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Today's Confidence Display with Edit */}
+                {confidence && !isEditingConfidence && (
+                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Today's Confidence</h4>
+                                <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{confidence}%</div>
+                            </div>
+                            <button
+                                onClick={() => setIsEditingConfidence(true)}
+                                className="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"
+                            >
+                                Edit
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Long Term Motivation */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
                     <h3 className="text-lg font-bold mb-4 flex items-center gap-2 dark:text-white">
@@ -376,9 +454,9 @@ const Dashboard: React.FC<Props> = ({ onGoalsChange }) => {
                             <span className="font-bold text-brand-600 bg-brand-50 dark:bg-brand-900 px-2 py-1 rounded">98%+</span>
                         </div>
                         <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-                            <span className="font-semibold text-gray-700 dark:text-gray-200">Consistency</span>
-                            <span className="font-bold text-green-600 bg-green-50 dark:bg-green-900 px-2 py-1 rounded">
-                                {Math.round(taskProgressPercent)}%
+                            <span className="font-semibold text-gray-700 dark:text-gray-200">Confidence</span>
+                            <span className="font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900 px-2 py-1 rounded">
+                                {avgConfidence !== null ? `${avgConfidence}%` : '-'}
                             </span>
                         </div>
                     </div>

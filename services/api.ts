@@ -248,5 +248,48 @@ export const api = {
       settings.motivationNote = note;
       localStorage.setItem(`settings_${userId}`, JSON.stringify(settings));
     }
+  },
+
+  // DATA - CONFIDENCE
+  logConfidence: async (userId: string, date: string, score: number) => {
+    if (isFirebaseConfigured) {
+      await setDoc(doc(db, `users/${userId}/confidence/${date}`), { score, date }, { merge: true });
+    } else {
+      const all = JSON.parse(localStorage.getItem(`confidence_${userId}`) || '{}');
+      all[date] = score;
+      localStorage.setItem(`confidence_${userId}`, JSON.stringify(all));
+    }
+  },
+
+  getConfidence: async (userId: string, date?: string) => {
+    if (isFirebaseConfigured) {
+      if (date) {
+        const snap = await getDoc(doc(db, `users/${userId}/confidence/${date}`));
+        return snap.exists() ? snap.data().score : null;
+      } else {
+        // Get all for average (return array of scores)
+        const q = query(collection(db, `users/${userId}/confidence`), orderBy("date", "desc"));
+        const snap = await getDocs(q);
+        return snap.docs.map(d => d.data().score);
+      }
+    } else {
+      const all = JSON.parse(localStorage.getItem(`confidence_${userId}`) || '{}');
+      if (date) return all[date] || null;
+      return Object.values(all);
+    }
+  },
+
+  getConfidenceHistory: async (userId: string) => {
+    if (isFirebaseConfigured) {
+      const q = query(collection(db, `users/${userId}/confidence`), orderBy("date", "desc"), limit(7));
+      const snap = await getDocs(q);
+      return snap.docs.map(d => ({ date: d.data().date, score: d.data().score }));
+    } else {
+      const all = JSON.parse(localStorage.getItem(`confidence_${userId}`) || '{}');
+      return Object.entries(all)
+        .map(([date, score]) => ({ date, score: score as number }))
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .slice(0, 7);
+    }
   }
 };

@@ -216,9 +216,9 @@ const SessionTracker: React.FC<Props> = ({ onSessionComplete, activeGoals }) => 
               <button
                 onClick={startTimer}
                 disabled={!selectedGoalId}
-                className={`w-full py-3 text-white rounded-lg flex items-center justify-center gap-2 font-semibold transition-colors ${!selectedGoalId ? 'bg-gray-300 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-700'}`}
+                className={`w-full py-3 text-white rounded-lg flex items-center justify-center gap-2 font-semibold transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${!selectedGoalId ? 'bg-gray-300 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-500 hover:via-pink-500 hover:to-red-500 shadow-purple-500/50'}`}
               >
-                <Play className="w-5 h-5" /> Start Focus
+                <Play className="w-5 h-5 fill-current" /> START FOCUS SESSION
               </button>
             ) : (
               <button

@@ -89,14 +89,7 @@ const App: React.FC = () => {
     }
   };
 
-  const handleDemoLogin = async () => {
-    setError('');
-    try {
-      await api.signIn("satyam@demo.com", "demo123");
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
+
 
   const handleLogout = async () => {
     await api.signOut();
@@ -181,19 +174,7 @@ const App: React.FC = () => {
             </button>
           </form>
 
-          <div className="my-4 flex items-center gap-2">
-            <div className="h-px bg-gray-200 flex-1"></div>
-            <span className="text-xs text-gray-400">OR</span>
-            <div className="h-px bg-gray-200 flex-1"></div>
-          </div>
 
-          <button
-            type="button"
-            onClick={handleDemoLogin}
-            className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-200 transition border border-gray-300"
-          >
-            Try Demo Account (Offline Mode)
-          </button>
 
           <div className="mt-4 text-center">
             <button onClick={() => { setIsLogin(!isLogin); setError(''); }} className="text-sm text-brand-600 hover:underline">
@@ -308,6 +289,12 @@ const App: React.FC = () => {
         {view === 'dashboard' && <Dashboard onGoalsChange={updateHeaderStats} />}
         {view === 'planner' && <Planner onGoalsChange={updateHeaderStats} />}
         {view === 'analytics' && <Analytics />}
+
+        <footer className="mt-12 py-6 border-t border-gray-200 dark:border-gray-800 text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Made with <span className="text-red-500 animate-pulse">❤️</span> by <a href="https://github.com/satyam-is-pro" target="_blank" rel="noopener noreferrer" className="font-medium text-brand-600 dark:text-brand-400 hover:underline">satyam-is-pro</a>
+          </p>
+        </footer>
       </main>
     </div>
   );
