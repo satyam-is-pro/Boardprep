@@ -420,7 +420,7 @@ const Dashboard: React.FC<Props> = ({ onGoalsChange }) => {
                     <SessionTracker onSessionComplete={fetchDashboardData} activeGoals={goals} />
 
                     {/* Confidence Input */}
-                    {goals.length > 0 && goals.filter(g => !g.completed).length <= 1 && (!confidence || isEditingConfidence) && (
+                    {(!confidence || isEditingConfidence) && (
                         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-6 text-white shadow-lg">
                             <h4 className="font-bold mb-2">{confidence ? "Edit Confidence" : "Daily Check-in"}</h4>
                             <p className="text-indigo-100 text-sm mb-4">How confident do you feel? ({confidenceInput}%)</p>
