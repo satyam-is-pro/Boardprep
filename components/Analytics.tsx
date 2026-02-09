@@ -167,24 +167,82 @@ const Analytics: React.FC = () => {
 
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
+            const dateObj = new Date(payload[0].payload.fullDate);
+            const formattedDate = dateObj.toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'short',
+                day: 'numeric'
+            });
+
             return (
-                <div className="bg-gray-900 border border-gray-800 p-4 rounded-xl shadow-2xl">
-                    <p className="text-gray-400 text-xs font-bold uppercase mb-2">{label}</p>
-                    {payload.map((entry: any, index: number) => (
-                        <div key={index} className="flex items-center gap-3 mb-1">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }}></div>
-                            <span className="text-sm font-bold text-white">
-                                {entry.name === 'hours' ? `${entry.value} Study Hours` : `Confidence: ${entry.value}%`}
-                            </span>
-                        </div>
-                    ))}
+                <div className={`${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} border p-4 rounded-xl shadow-2xl min-w-[200px]`}>
+                    <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'} text-xs font-bold uppercase mb-3 border-b ${isDark ? 'border-gray-800' : 'border-gray-100'} pb-2`}>
+                        {formattedDate}
+                    </p>
+                    <div className="space-y-3">
+                        {payload.map((entry: any, index: number) => {
+                            const isHours = entry.name === 'hours';
+                            return (
+                                <div key={index} className="flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }}></div>
+                                        <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            {isHours ? 'Study Effort' : 'Readiness'}
+                                        </span>
+                                    </div>
+                                    <span className={`text-sm font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                        {isHours ? `${entry.value}h` : `${entry.value ?? 0}%`}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                        {/* Ensure confidence shows even if not in payload (if possible) */}
+                        {!payload.find((p: any) => p.name === 'confidence') && (
+                            <div className="flex items-center justify-between gap-4 opacity-50">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500 opacity-50"></div>
+                                    <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        Readiness
+                                    </span>
+                                </div>
+                                <span className={`text-sm font-black ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                    --%
+                                </span>
+                            </div>
+                        )}
+                    </div>
                 </div>
             );
         }
         return null;
     };
 
-    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
+    const PieTooltip = ({ active, payload }: any) => {
+        if (active && payload && payload.length) {
+            const data = payload[0].payload;
+            return (
+                <div className={`${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} border p-4 rounded-xl shadow-2xl`}>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: payload[0].color }}></div>
+                        <span className={`text-sm font-black uppercase tracking-wider ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                            {data.name}
+                        </span>
+                    </div>
+                    <div className="flex flex-col gap-1 pl-6">
+                        <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} font-bold`}>
+                            Time Spent: <span className={isDark ? 'text-white' : 'text-gray-900'}>{data.value} hrs</span>
+                        </div>
+                        <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} font-bold`}>
+                            Distribution: <span className={isDark ? 'text-white' : 'text-gray-900'}>{((data.value / stats.totalHours) * 100).toFixed(1)}%</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        return null;
+    };
+
+    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
         const RADIAN = Math.PI / 180;
         const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
         const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -193,7 +251,14 @@ const Analytics: React.FC = () => {
         if (percent < 0.1) return null;
 
         return (
-            <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-[10px] font-bold">
+            <text
+                x={x}
+                y={y}
+                fill={isDark ? "white" : "#1f2937"}
+                textAnchor={x > cx ? 'start' : 'end'}
+                dominantBaseline="central"
+                className="text-[10px] font-black"
+            >
                 {`${(percent * 100).toFixed(0)}%`}
             </text>
         );
@@ -265,7 +330,17 @@ const Analytics: React.FC = () => {
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#374151' : '#f3f4f6'} opacity={0.5} />
-                                <XAxis dataKey="date" stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} />
+                                <XAxis
+                                    dataKey="fullDate"
+                                    stroke="#9ca3af"
+                                    fontSize={11}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(str) => {
+                                        const date = new Date(str);
+                                        return date.toLocaleDateString('en-US', { weekday: 'short' });
+                                    }}
+                                />
                                 <YAxis
                                     yAxisId="left"
                                     stroke="#9ca3af"
@@ -354,10 +429,7 @@ const Analytics: React.FC = () => {
                                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} cornerRadius={12} />
                                             ))}
                                         </Pie>
-                                        <Tooltip
-                                            formatter={(v: number) => [`${v} hrs`, 'Study Time']}
-                                            contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '16px', color: '#fff', fontSize: '12px' }}
-                                        />
+                                        <Tooltip content={<PieTooltip />} />
                                         <Legend
                                             iconType="circle"
                                             wrapperStyle={{ paddingTop: '30px', color: isDark ? '#fff' : '#000' }}
