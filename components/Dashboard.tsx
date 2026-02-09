@@ -69,12 +69,12 @@ const Dashboard: React.FC<Props> = ({ onGoalsChange }) => {
 
         let targetMinutes = 0;
 
-        // 3. Map actual hours to goals using TODAY'S sessions
+        // 3. Map actual hours to goals using ALL sessions (for total progress across days)
         const goalsWithProgress = fetchedGoals.map(g => {
             targetMinutes += (g.targetHours * 60);
 
-            // Calculate progress specific to this goal (matching by title)
-            const goalSpecificMinutes = todaysSessions
+            // Calculate progress specific to this goal across all days
+            const goalSpecificMinutes = allSessions
                 .filter(s => s.subject === g.subject && s.topic === g.title)
                 .reduce((sum, s) => sum + s.durationMinutes, 0);
 
